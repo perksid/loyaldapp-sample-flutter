@@ -69,8 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future getWalletUrl() async {
+    EasyLoading.show(status: 'loading...');
     try {
       _apiService.getWalletUrl().then((walletData) {
+        EasyLoading.dismiss();
         if (walletData != null) {
           print("WALLET DATA");
           print(walletData.data?.url ?? "");
@@ -82,10 +84,13 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         } else {
           //failed
+          EasyLoading.dismiss();
         }
       });
       // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      EasyLoading.dismiss();
+    }
   }
 
   Future getLoginStatus() async {
@@ -113,24 +118,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void postTransaction(String point) async {
     EasyLoading.show(status: 'loading...');
-    _apiService.postTransaction(point).then((transactionData) {
-      // setState(() => _isLoading = false);
-      EasyLoading.dismiss();
+    try {
+      _apiService.postTransaction(point).then((transactionData) {
+        // setState(() => _isLoading = false);
+        EasyLoading.dismiss();
 
-      if (transactionData != null) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => WebViewApp(
-                    recordName: transactionData.data?.transactionUrl ?? "")));
-      } else {
-        //failed
-        Fluttertoast.showToast(
-            msg: "Failed, please try again",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER);
-      }
-    });
+        if (transactionData != null) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => WebViewApp(
+                      recordName: transactionData.data?.transactionUrl ?? "")));
+        } else {
+          //failed
+          print("jgjg");
+          print(transactionData);
+
+          Fluttertoast.showToast(
+              msg: "Failed, please try again",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.CENTER);
+        }
+      });
+    } catch (e) {
+      print(e);
+      EasyLoading.dismiss();
+    }
   }
 
   void setLoggedIn(bool visibility) {
@@ -178,14 +191,17 @@ class _MyHomePageState extends State<MyHomePage> {
     _apiService.getProfile(wallet).then((profileData) {
       if (profileData != null) {
         _profileData = profileData;
-        wallet = _profileData?.data?.walletAddress ?? "";
+        // wallet = _profileData?.data?.walletAddress ?? "";
 
+        // print(wallet);
+        // SharedPref().storeWallet(wallet);
         setState(() {
-          SharedPref().storeWallet(wallet);
-          ldpToken = profileData.data?.ldpToken ?? "";
-          ldpTokenIdr = profileData.data?.ldpTokenPriceIdr.toString() ?? "";
-          walletSubFirst = wallet.substring(0, 3);
-          walletSubEnd = wallet.substring(wallet.length - 3);
+          ldpToken = profileData.data?.ldpToken ?? "0";
+          ldpTokenIdr = profileData.data?.ldpTokenPriceIdr.toString() ?? "0";
+          // if (wallet != "") {
+          //   walletSubFirst = wallet.substring(0, 3);
+          //   walletSubEnd = wallet.substring(wallet.length - 3);
+          // }
         });
       } else {
         //failed
@@ -358,7 +374,9 @@ class _MyHomePageState extends State<MyHomePage> {
           height: 180,
           child: Card(
               elevation: 8.0,
-              color: ApiService().merchantSignature.substring(0, 3) == "SB_" ? const Color(0xff504DDF) : const Color(0xffEF744B),
+              color: ApiService().merchantSignature.substring(0, 3) == "SB_"
+                  ? const Color(0xff504DDF)
+                  : const Color(0xffEF744B),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14.0),
               ),

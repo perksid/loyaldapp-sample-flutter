@@ -7,21 +7,12 @@ import 'user_profile_model.dart';
 import 'utils.dart';
 
 class ApiService {
-
-  var baseUrl = "";
+  var baseUrl = "https://staging-s1jakarta.loyaldapp.io";
   var version = "v1";
-
-
-  //Production
   final _developerKey = '';
   var merchantSignature = '';
 
-  //Sandbox
-  // final _developerKey = '';
-  // var merchantSignature = '';
-
   Client client = Client();
-
 
   Future<DeveloperAuthSignatureBaseResponse?> getWalletUrl() async {
     var url = "$baseUrl/$version/developer/signature/auth";
@@ -33,12 +24,12 @@ class ApiService {
     final response = await client.get(Uri.parse(url), headers: headers);
 
     if (response.statusCode == 200) {
-      return DeveloperAuthSignatureBaseResponse.fromJson(json.decode(response.body));
+      return DeveloperAuthSignatureBaseResponse.fromJson(
+          json.decode(response.body));
     } else {
       return null;
     }
   }
-
 
   Future<ProfileBaseResponse?> getProfile(String wallet) async {
     var url = "$baseUrl/$version/user/wallet/$wallet";
@@ -65,6 +56,8 @@ class ApiService {
       "wallet_address": await SharedPref().getWallet()
     });
 
+      print("body");
+      print(body);
 
     var headers = {
       'Accept': 'application/json',
@@ -72,13 +65,15 @@ class ApiService {
       'developer-key': _developerKey,
       'merchant-signature': merchantSignature
     };
-    final response = await client.post(Uri.parse(url), headers: headers, body: body);
+    final response =
+        await client.post(Uri.parse(url), headers: headers, body: body);
 
     if (response.statusCode == 200) {
       return Transaction.fromJson(json.decode(response.body));
     } else {
+      print("ERROR");
+      print(response.body);
       return null;
     }
   }
-
 }
