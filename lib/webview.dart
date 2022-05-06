@@ -75,6 +75,13 @@ class _InAppWebViewPageState extends State<InAppWebViewPage> {
             onWebViewCreated: (InAppWebViewController controller) {
               _webViewController = controller;
             },
+            onUpdateVisitedHistory: (controller, url, androidIsReload) {
+              print("urrlllll $url");
+              if (url.toString().contains("login")) {
+                Navigator.of(context, rootNavigator: true).pop(context);
+                return;
+              }
+            },
             onCreateWindow: (controller, createWindowRequest) async {
               print("onCreateWindow");
 
