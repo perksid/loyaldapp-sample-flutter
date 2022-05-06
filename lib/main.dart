@@ -441,6 +441,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                         fontWeight: FontWeight.w600),
                                   ),
                                   onPressed: () {
+                                    if(pointController.text.isEmpty){
+                                      Fluttertoast.showToast(
+                                          msg: "Point cannot be empty",
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.CENTER);
+                                      return;
+                                    }
                                     postTransaction(pointController.text);
                                   })),
                         ])),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:loyaldappwallet/apiservice.dart';
+// import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewApp extends StatefulWidget {
   final String recordName;
@@ -32,6 +33,7 @@ class InAppWebViewPage extends StatefulWidget {
 class _InAppWebViewPageState extends State<InAppWebViewPage> {
   late InAppWebViewController _webViewController;
   late InAppWebViewController _webViewPopupController;
+  var isLogin = false;
 
   @override
   void initState() {
@@ -61,56 +63,112 @@ class _InAppWebViewPageState extends State<InAppWebViewPage> {
       ),
       body: SafeArea(
         child: Container(
+      //     child: WebView(
+      //         userAgent: "random",
+      //   initialUrl: widget.recordName,
+      //   javascriptMode: JavascriptMode.unrestricted,
+      //   onWebViewCreated: (WebViewController webViewController) {
+      //     // _controller.complete(webViewController);
+      //   },
+      //   onProgress: (int progress) {
+      //     print('WebView is loading (progress : $progress%)');
+      //   },
+      //   javascriptChannels: <JavascriptChannel>{
+      //     // _toasterJavascriptChannel(context),
+      //   },
+      //   navigationDelegate: (NavigationRequest request) {
+      //     if (request.url.startsWith('https://www.youtube.com/')) {
+      //       print('blocking navigation to $request}');
+      //       return NavigationDecision.prevent;
+      //     }
+      //     print('allowing navigation to $request');
+      //     return NavigationDecision.navigate;
+      //   },
+      //   onPageStarted: (String url) {
+      //     print('Page started loading: $url');
+      //   },
+      //   onPageFinished: (String url) {
+      //     print('Page finished loading: $url');
+      //   },
+      //   gestureNavigationEnabled: true,
+      //   backgroundColor: const Color(0x00000000),
+      // ),
+
           child: InAppWebView(
             initialUrlRequest: URLRequest(url: Uri.parse(widget.recordName)),
             initialOptions: InAppWebViewGroupOptions(
-                crossPlatform: InAppWebViewOptions(
+               android: AndroidInAppWebViewOptions(
+                    // allowContentAccess: true,
+                    // builtInZoomControls: true,
+                    // thirdPartyCookiesEnabled: true,
+                    // allowFileAccess: true,
+                    supportMultipleWindows: true
+                  ),
+                  crossPlatform: InAppWebViewOptions(
+                    // verticalScrollBarEnabled: true,
+                    // clearCache: true,
+                    // disableContextMenu: false,
+                    // cacheEnabled: true,
+                    // javaScriptEnabled: true,
                     userAgent: 'random',
-                    // set this to true if you are using window.open to open a new window with JavaScript
-                    javaScriptCanOpenWindowsAutomatically: true),
-                android: AndroidInAppWebViewOptions(
-                    // on Android you need to set supportMultipleWindows to true,
-                    // otherwise the onCreateWindow event won't be called
-                    supportMultipleWindows: true)),
+                    javaScriptCanOpenWindowsAutomatically: true
+                    // transparentBackground: true,
+                  )),
             onWebViewCreated: (InAppWebViewController controller) {
               _webViewController = controller;
             },
             onUpdateVisitedHistory: (controller, url, androidIsReload) {
-              print("urrlllll $url");
-              if (url.toString().contains("login")) {
-                Navigator.of(context, rootNavigator: true).pop(context);
-                return;
-              }
+              // print("urrlllll $url");
+              // if (url.toString().contains("login")) {
+              //   if (isLogin) {
+              //     Navigator.of(context, rootNavigator: true).pop(context);
+              //   }
+              //   isLogin = true;
+              //   return;
+              // }
             },
             onCreateWindow: (controller, createWindowRequest) async {
-              print("onCreateWindow");
-
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    content: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 400,
-                      child: InAppWebView(
-                        // Setting the windowId property is important here!
-                        windowId: createWindowRequest.windowId,
-                        initialOptions: InAppWebViewGroupOptions(
-                          crossPlatform: InAppWebViewOptions(
-                            userAgent: 'random'
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        content: Container (
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height,
+                          child: InAppWebView(
+                            // Setting the windowId property is important here!
+                            windowId: createWindowRequest.windowId,
+                            initialOptions: InAppWebViewGroupOptions(
+                              // android: AndroidInAppWebViewOptions(
+                              //     builtInZoomControls: true,
+                              //     thirdPartyCookiesEnabled: true,
+                              //     supportMultipleWindows: true
+                              // ),
+                              crossPlatform: InAppWebViewOptions(
+                                // cacheEnabled: true,
+                                // javaScriptEnabled: true,
+                                userAgent: 'random'
+                                // javaScriptCanOpenWindowsAutomatically: true
+                              ),
+                            ),
+                            onWebViewCreated: (InAppWebViewController controller) {
+                              _webViewPopupController = controller;
+                            },
+                            onCloseWindow: (controller) {
+                              // On Facebook Login, this event is called twice,
+                              // so here we check if we already popped the alert dialog context
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                            },
                           ),
                         ),
-                        onWebViewCreated: (InAppWebViewController controller) {
-                          _webViewPopupController = controller;
-                        },
-                      ),
-                    ),
+                      );
+                    },
                   );
-                },
-              );
 
-              return true;
-            },
+                  return true;
+                },
           ),
         ),
       ),
