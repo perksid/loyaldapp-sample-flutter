@@ -7,7 +7,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loyaldappwallet/user_profile_model.dart';
 import 'package:loyaldappwallet/utils.dart';
 import 'package:loyaldappwallet/webview.dart';
+import 'package:loyaldappwallet/webview_auth.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
+import 'dart:io' show Platform;
 
 import 'apiservice.dart';
 
@@ -153,27 +155,51 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void authenticate() async {
-    var url = walletUrl;
-    const callbackUrlScheme = 'loyaldappwallet';
-
-    try {
-      final result = await FlutterWebAuth.authenticate(
-          url: url,
-          callbackUrlScheme: callbackUrlScheme,
-          preferEphemeral: !isLoggedIn);
-
-      setState(() {
-        var walletData = Uri.parse(result).queryParameters['user_wallet'];
-        setLoggedIn(true);
-        wallet = walletData ?? "";
-        SharedPref().storeWallet(wallet);
-        if (wallet != "") {
-          walletSubFirst = wallet.substring(0, 3);
-          walletSubEnd = wallet.substring(wallet.length - 3);
-        }
+    if (Platform.isAndroid) {
+      // Android-specific code
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => WebViewAuthApp(recordName: walletUrl)),
+      ).then((walletData)
+      {
+        setState(() {
+          setLoggedIn(true);
+          wallet = walletData ?? "";
+          SharedPref().storeWallet(wallet);
+          if (wallet != "") {
+            walletSubFirst = wallet.substring(0, 3);
+            walletSubEnd = wallet.substring(wallet.length - 3);
+          }
+        });
       });
-      // ignore: empty_catches
-    } catch (e) {}
+
+
+    } else if (Platform.isIOS) {
+      // iOS-specific code
+
+      var url = walletUrl;
+      const callbackUrlScheme = 'loyaldappwallet';
+
+      try {
+        final result = await FlutterWebAuth.authenticate(
+            url: url,
+            callbackUrlScheme: callbackUrlScheme,
+            preferEphemeral: !isLoggedIn);
+
+        setState(() {
+          var walletData = Uri.parse(result).queryParameters['user_wallet'];
+          setLoggedIn(true);
+          wallet = walletData ?? "";
+          SharedPref().storeWallet(wallet);
+          if (wallet != "") {
+            walletSubFirst = wallet.substring(0, 3);
+            walletSubEnd = wallet.substring(wallet.length - 3);
+          }
+        });
+        // ignore: empty_catches
+      } catch (e) {}
+    }
   }
 
   void logout() {

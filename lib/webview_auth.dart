@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:loyaldappwallet/apiservice.dart';
 
-class WebViewApp extends StatefulWidget {
+class WebViewAuthApp extends StatefulWidget {
   final String recordName;
 
-  const WebViewApp({Key? key, required this.recordName}) : super(key: key);
+  const WebViewAuthApp({Key? key, required this.recordName}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<WebViewApp> {
+class _MyAppState extends State<WebViewAuthApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(home: InAppWebViewPage(recordName: widget.recordName));
@@ -32,6 +32,7 @@ class InAppWebViewPage extends StatefulWidget {
 class _InAppWebViewPageState extends State<InAppWebViewPage> {
   late InAppWebViewController _webViewController;
   late InAppWebViewController _webViewPopupController;
+  var isFromRegistration = false;
 
   @override
   void initState() {
@@ -75,6 +76,34 @@ class _InAppWebViewPageState extends State<InAppWebViewPage> {
             onWebViewCreated: (InAppWebViewController controller) {
               _webViewController = controller;
             },
+            onUpdateVisitedHistory: (controller, url, androidIsReload) {
+
+              print("urrlllll $url");
+              if (url.toString().contains("registration/setup-pin")) {
+                Navigator.of(context, rootNavigator: true).pop(context);
+                isFromRegistration = true;
+                return;
+              }
+              if (url.toString().contains("loyaldappwallet")) {
+                //Prevent that url works
+                // webViewController?.goBack();
+                //You can do anything
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => const Screen1()),
+                // );
+                var walletData = Uri.parse(url.toString()).queryParameters['user_wallet'];
+
+                // Navigator.pop(context, walletData);
+                // Navigator.pop(context, walletData);
+                if(!isFromRegistration){
+                  Navigator.of(context, rootNavigator: true).pop(walletData);
+                }
+                Navigator.of(context, rootNavigator: true).pop(walletData);
+
+                return;
+              }
+            },
             onCreateWindow: (controller, createWindowRequest) async {
               print("onCreateWindow");
 
@@ -89,9 +118,8 @@ class _InAppWebViewPageState extends State<InAppWebViewPage> {
                         // Setting the windowId property is important here!
                         windowId: createWindowRequest.windowId,
                         initialOptions: InAppWebViewGroupOptions(
-                          crossPlatform: InAppWebViewOptions(
-                            userAgent: 'random'
-                          ),
+                          crossPlatform:
+                              InAppWebViewOptions(userAgent: 'random'),
                         ),
                         onWebViewCreated: (InAppWebViewController controller) {
                           _webViewPopupController = controller;
