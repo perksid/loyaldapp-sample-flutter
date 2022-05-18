@@ -77,8 +77,8 @@ class Data {
 
     userPointSpent = json['user_point_spent'].toDouble();
     userTokenReceived = json['user_token_received'].toDouble();
-    currentTokenPriceIdr = json['current_token_price_idr'].toDouble();
-    tokenSpent = json['token_spent'].toDouble();
+    currentTokenPriceIdr = json['token_price_idr'].toDouble();
+    tokenSpent = json['user_token_spent'].toDouble();
     tokenCommision = json['token_commision'].toDouble();
     transactionFeeToken = json['transaction_fee_token'].toDouble();
     userPointSpentIdr = json['user_point_spent_idr'].toDouble();
